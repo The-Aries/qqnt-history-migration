@@ -1,0 +1,9 @@
+_private/
+__pycache__/
+*.pyc
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.tsv
+*.html

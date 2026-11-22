@@ -201,6 +201,7 @@
 | --- | --- |
 | QQNT 官方客户端（Windows、Mac、iPhone） | 查看、验收、备份导入、导出到手机 |
 | [sqlcipher3](https://pypi.org/project/sqlcipher3/) | 在 Python 里打开 SQLCipher 数据库 |
+| [Frida](https://frida.re/) | 解密旧版 `Msg3.0.db` 时，在 32 位进程里调用旧版 QQ 的 `KernelUtil.dll` |
 | [protocol_dbkey](https://github.com/QQBackup/protocol_dbkey) | 在 Mac 上取得本机 QQ 数据库的密钥 |
 | Python 3.14、Windows 10、macOS | 运行环境 |
 
@@ -211,7 +212,7 @@
 - **第二段**：两台设备的逐条对比、补写缺少的消息、补映射行、按清单删除会话、会话审核网页、媒体文件对比。
 - **第三段**：分批导出到手机。
 
-脚本里不包含账号、路径和密钥。所有输入都用命令行参数传入，密钥只通过环境变量传入。取得密钥和解密旧版 `Msg3.0.db` 的方法不在本仓库里。
+脚本里不包含账号、路径和密钥。所有输入都用命令行参数传入，密钥只通过环境变量传入。旧版 `Msg3.0.db` 的解密工具 `legacy_decrypt.py` 也在里面：它借旧版 QQ 自己的 `KernelUtil.dll` 解码每一页。取得密钥的方法不在本仓库里。
 
 ## 9. 说明
 

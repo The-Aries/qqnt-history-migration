@@ -297,6 +297,7 @@ batches and found the "hanging" large chat by splitting.
 | --- | --- |
 | Official QQNT client (Windows, Mac, iPhone) | View, check, backup import, export to phone |
 | [sqlcipher3](https://pypi.org/project/sqlcipher3/) | Open SQLCipher databases from Python |
+| [Frida](https://frida.re/) | Call the old client's `KernelUtil.dll` in a 32-bit process to decrypt a legacy `Msg3.0.db` |
 | [protocol_dbkey](https://github.com/QQBackup/protocol_dbkey) | Get the key of the local QQ database on Mac |
 | Python 3.14, Windows 10, macOS | Runtime |
 
@@ -310,7 +311,8 @@ batches and found the "hanging" large chat by splitting.
 - **Part 3**: export to phone in batches.
 
 They contain no account numbers, paths or keys. Every input is a command-line argument and keys are passed only
-through environment variables. How to obtain keys or decrypt a legacy `Msg3.0.db` is not covered.
+through environment variables. The decryption tool for a legacy `Msg3.0.db`, `legacy_decrypt.py`, is included: it lets the old client's own
+`KernelUtil.dll` decode every page. How to obtain keys is not covered.
 
 ## 9. Notes
 

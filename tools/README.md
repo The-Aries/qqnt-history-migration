@@ -8,7 +8,11 @@
 
 - Python 3.10 或更高版本，并安装 [sqlcipher3](https://pypi.org/project/sqlcipher3/)：`pip install sqlcipher3`。用到 `--tz` 的工具在 Windows 上还需要 `pip install tzdata`。
 - 已经取得自己账号的数据库密钥。本仓库不提供取得密钥的方法。在 Mac 上可以参考 [protocol_dbkey](https://github.com/QQBackup/protocol_dbkey)。
-- 补全旧记录时，需要一份**已解密**的旧版 `Msg3.0.db`，也就是一个普通的 SQLite 文件。本仓库不提供解密方法。
+- 补全旧记录时，需要先用 `legacy_decrypt.py` 把旧版 `Msg3.0.db` 解密成普通的 SQLite 文件。解密需要：
+  - Windows，以及 32 位 PowerShell；
+  - `pip install frida`（16 或 17 都可以）；
+  - 旧版 PC QQ 9.7.25.29417 的 `KernelUtil.dll`（1,873,456 字节）。函数偏移只适用于这个版本，其他版本的文件会被拒绝；
+  - 这个旧库的 16 字节密钥，写成 32 个十六进制字符，放在环境变量里。取得密钥的方法不在本仓库里。
 - 密钥只通过环境变量传入。参数 `--key-env` 填的是环境变量的**名称**，不是密钥本身。
 - 在 Windows 上，可以用 `qq_key.ps1` 把密钥保存为 DPAPI 加密文件，再从文件加载到环境变量里。
 
@@ -25,6 +29,7 @@
 
 | 脚本 | 用途 | 是否修改数据 |
 | --- | --- | --- |
+| `legacy_decrypt.py` | 用旧版 QQ 自己的编解码函数，把旧版 `Msg3.0.db` 解密成普通 SQLite 文件 | 生成新文件，源文件只读 |
 | `legacy_reconcile.py` | 把旧版记录和 QQNT 已有的消息逐条配对，找出缺少的记录 | 只读 |
 | `legacy_check.py` | 用导入器自己写的行，逐条核对转换规则 | 只读 |
 | `legacy_write.py` | 把缺少的旧版记录写进 QQNT 的库副本 | 生成新库 |
@@ -46,6 +51,9 @@
 ### 把旧版记录补进 QQNT
 
 ```sh
+# 0. 解密旧库（先复制一份旧库，旧版 QQ 要关着）
+python tools/legacy_decrypt.py --source Msg3.0.copy.db --out Msg3.0.plain.db --key-env PCQQ_KEY \
+       --kernelutil "<旧版 QQ>\Bin\KernelUtil.dll"
 # 1. 找出缺少的记录。可以同时传入多份旧库（例如实库和更早的备份），相同的记录只算一次
 python tools/legacy_reconcile.py --legacy Msg3.0.plain.db --qqnt nt_msg.db --key-env QQ_KEY \
        --exclude not_wanted.tsv --out reconcile.sqlite
@@ -69,7 +77,7 @@ python tools/unexpire_pictures.py nt_msg.db --key-env QQ_KEY --nt-data <账号�
 - 系统账号发出的撤回提示默认不写，与导入器一致。加 `--recall-notices write` 时，写成灰条。
 - 用 `--kinds` 可以限定写哪几类：`content`、`gray_tip`、`market_face`、`ark`、`text`。
 
-写完后，按 `<out>.samples.tsv` 里的消息 ID 和时间，在客户端里抽查。`reconcile.sqlite` 里有聊天内容，用完就删除。
+写完后，按 `<out>.samples.tsv` 里的消息 ID 和时间，在客户端里抽查。`Msg3.0.plain.db` 和 `reconcile.sqlite` 里都有明文聊天内容，用完就删除。
 
 ### 迁到 Mac 后补齐差异
 

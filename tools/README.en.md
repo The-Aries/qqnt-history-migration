@@ -11,7 +11,13 @@ moving to phone. They contain no account numbers, paths or keys; every input is 
   `--tz` also need `pip install tzdata` on Windows.
 - The database key of your own account. How to obtain it is not covered here; on Mac see
   [protocol_dbkey](https://github.com/QQBackup/protocol_dbkey).
-- For legacy history: a **decrypted** legacy `Msg3.0.db` (a plain SQLite file). Decryption is not covered here.
+- For legacy history: first decrypt the legacy `Msg3.0.db` into a plain SQLite file with `legacy_decrypt.py`. It needs:
+  - Windows with the 32-bit PowerShell;
+  - `pip install frida` (16 or 17);
+  - `KernelUtil.dll` of legacy PC QQ 9.7.25.29417 (1,873,456 bytes); the function offsets fit only this build, other
+    files are refused;
+  - the 16-byte key of that database as 32 hex characters in an environment variable. How to obtain it is not
+    covered here.
 - Keys are passed only through environment variables. `--key-env` takes the **name** of the variable, not the key.
 - On Windows, `qq_key.ps1` stores a key in a DPAPI-protected file and loads it into an environment variable.
 
@@ -32,6 +38,7 @@ moving to phone. They contain no account numbers, paths or keys; every input is 
 
 | Script | Purpose | Changes data |
 | --- | --- | --- |
+| `legacy_decrypt.py` | Decrypt a legacy `Msg3.0.db` into a plain SQLite file with the old client's own codec | new file; source read-only |
 | `legacy_reconcile.py` | Pair legacy records with existing QQNT messages one to one and find the missing ones | read-only |
 | `legacy_check.py` | Check the conversion rules against rows the importer wrote itself | read-only |
 | `legacy_write.py` | Write the missing legacy records into a copy of the QQNT database | new file |
@@ -53,6 +60,9 @@ Run `python <script> --help` for details.
 ### Write legacy history into QQNT
 
 ```sh
+# 0. Decrypt the legacy database (copy it first, with legacy QQ closed)
+python tools/legacy_decrypt.py --source Msg3.0.copy.db --out Msg3.0.plain.db --key-env PCQQ_KEY \
+       --kernelutil "<legacy QQ>\Bin\KernelUtil.dll"
 # 1. Find the missing records. Several legacy files (e.g. the live one and an older backup) can be passed; identical
 #    records count once
 python tools/legacy_reconcile.py --legacy Msg3.0.plain.db --qqnt nt_msg.db --key-env QQ_KEY \
@@ -82,8 +92,8 @@ Rules of `legacy_write.py`:
   stores them as gray tips.
 - `--kinds` limits what is written: `content`, `gray_tip`, `market_face`, `ark`, `text`.
 
-Afterwards check a few rows in the client using the msgIds and times in `<out>.samples.tsv`. `reconcile.sqlite`
-contains message content; delete it when done.
+Afterwards check a few rows in the client using the msgIds and times in `<out>.samples.tsv`. `Msg3.0.plain.db` and
+`reconcile.sqlite` contain plain message content; delete them when done.
 
 ### Fill in differences after moving to Mac
 
